@@ -13,15 +13,15 @@ const out = process.argv[3];
   page.on('console', m => { if (m.type() === 'error' && !/ERR_FILE_NOT_FOUND/.test(m.text())) errors.push(m.text()); });
   await page.goto('file://' + path.resolve(__dirname, '../app/index.html'));
   await page.waitForTimeout(800);
-  const styles = ['marquee', 'shelf', 'wall', 'cast'];
+  const styles = ['cinema', 'guide', 'editorial', 'gallery', 'lounge'];
   for (let i = 0; i < styles.length; i++) {
-    for (let k = 0; k < 3; k++) await page.keyboard.press('ArrowUp');
+    for (let k = 0; k < 6; k++) await page.keyboard.press('ArrowUp');
     for (let k = 0; k < 6; k++) await page.keyboard.press('ArrowLeft');
     for (let k = 0; k < i; k++) await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowRight');
-    if (styles[i] === 'shelf') { await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowRight'); }
+    if (styles[i] === 'guide') { await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowRight'); }
     await page.waitForTimeout(900);
     const cls = await page.evaluate(() => document.body.className);
     if (cls.indexOf('style-' + styles[i]) < 0) errors.push('style not applied: ' + styles[i] + ' got ' + cls);

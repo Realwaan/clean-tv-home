@@ -43,7 +43,7 @@ console.log('state', JSON.stringify(await evaluate(`({
   tmdb: TH.art.live, tizen: !!window.tizen, ua: navigator.userAgent.slice(0, 120)
 })`)));
 
-const styles = ['marquee', 'shelf', 'wall', 'cast'];
+const styles = ['cinema', 'guide', 'editorial', 'gallery', 'lounge'];
 const start = await evaluate('document.body.className');
 for (let i = 0; i < styles.length; i++) {
   await press('up', 8); await press('left', 6); await press('right', i); await press('enter');
