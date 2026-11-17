@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clean TV Cast — PC to Samsung BU8100</title>
+  <style>
+    :root {
+      --bg-deep: #08090b;
+      --case-bg: #101216;
+      --card-bg: #15181e;
+      --border: rgba(241, 239, 233, 0.12);
+      --text-main: #f1efe9;
+      --text-dim: rgba(241, 239, 233, 0.62);
+      --amber: #f2b134;
+      --green: #22c55e;
+      --red: #e63946;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 28px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .shell {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--case-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px 20px;
+    }
+    .title-group h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .title-group p {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6c757d;
+    }
+    .pill.live .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .pill.live { color: var(--text-main); }
+    .pill.casting .dot { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+    .btn {
+      background: #1a1e26;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.14s ease;
+    }
+    .btn:hover { background: #232833; border-color: rgba(241,239,233,0.25); }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--amber);
+      color: #0b0d11;
+      border-color: var(--amber);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 20px;
+    }
+    .btn-primary:hover { background: #f5be54; border-color: #f5be54; }
+    .btn-danger {
+      background: rgba(230, 57, 70, 0.18);
+      color: #ff7b85;
+      border-color: rgba(230, 57, 70, 0.45);
+    }
+    .btn-danger:hover { background: rgba(230, 57, 70, 0.3); }
+
+    .card {
+      background: var(--case-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .card-head h2 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .card-head p {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+    .field {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .field select {
+      background: #0e1014;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 8px;
+      font-size: 13px;
+      outline: none;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      padding-top: 4px;
+      cursor: pointer;
+    }
+    .check-row input { width: 16px; height: 16px; accent-color: var(--amber); }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .preview-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #050608;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+    .preview-box video.active { display: block; }
+    .preview-placeholder {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .preview-placeholder code {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: var(--amber);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 13px;
+      user-select: all;
+    }
+
+    .quick-tv-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+
+    .status-line {
+      font-size: 13px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-line b { color: var(--text-main); }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text-main);
+      color: #08090b;
+      padding: 9px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="title-group">
+        <h1>Clean TV Cast</h1>
+        <p id="subInfo">Stream PC screen, window, or browser tab to Samsung BU8100 over LAN</p>
+      </div>
+      <div class="nav-actions">
+        <div class="pill" id="tvPill">
+          <span class="dot"></span>
+          <span id="tvPillText">Checking TV...</span>
+        </div>
+        <a href="/" class="btn btn-sm">← Remote</a>
+      </div>
+    </header>
+
+    <!-- Primary Card: LAN Screen Share -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>1 · LAN Screen Cast (Ethernet &amp; Wi-Fi)</h2>
+          <p>Mirrors any screen, app window, or tab with audio straight to your TV browser.</p>
+        </div>
+        <div class="pill" id="receiverPill">
+          <span class="dot"></span>
+          <span id="receiverPillText">0 TVs connected</span>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div class="field">
+          <label for="qualitySelect">Resolution &amp; FPS</label>
+          <select id="qualitySelect">
+            <option value="1080p30" selected>1080p · 30 fps (Sharp)</option>
+            <option value="720p60">720p · 60 fps (Ultra Smooth)</option>
+            <option value="720p30">720p · 30 fps (Low Bandwidth)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="modeSelect">Stream Engine</label>
+          <select id="modeSelect">
+            <option value="auto" selected>Auto (WebRTC → MSE Fallback)</option>
+            <option value="webrtc">WebRTC Only (Lowest Latency)</option>
+            <option value="mse">MSE WebM Stream (Max Compatibility)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Options</label>
+          <label class="check-row">
+            <input type="checkbox" id="audioCheck" checked>
+            <span>Include PC / Tab Audio</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="autoOpenTvCheck" checked>
+            <span>Auto-open TV screen</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn btn-primary" id="btnStartCast">Share PC Screen to TV</button>
+        <button class="btn btn-danger" id="btnStopCast" hidden>Stop Casting</button>
+        <button class="btn" id="btnOpenTv">Open Receiver on TV</button>
+        <button class="btn" id="btnCopyUrl">Copy TV URL</button>
+      </div>
+
+      <div class="preview-box">
+        <video id="localPreview" autoplay muted playsinline></video>
+        <div class="preview-placeholder" id="previewPlaceholder">
+          Click <b>Share PC Screen to TV</b> and pick your <b>Entire Screen</b>, a <b>Window</b>, or a <b>Browser Tab</b>.<br>
+          TV Receiver URL: <code id="receiverUrlText">http://.../tv-cast.html</code>
+        </div>
+      </div>
+
+      <div class="status-line">
+        <span>Status: <b id="castStatusText">Idle</b></span>
+        <span>Active Mode: <b id="castModeText">—</b></span>
+      </div>
+
+      <div class="quick-tv-bar">
+        <span style="font-size:12px;color:var(--text-dim);font-weight:600;">TV Controls:</span>
+        <div class="btn-row">
+          <button class="btn btn-sm" data-tv-key="KEY_VOLDOWN">VOL −</button>
+          <button class="btn btn-sm" data-tv-key="KEY_MUTE">MUTE</button>
+          <button class="btn btn-sm" data-tv-key="KEY_VOLUP">VOL +</button>
+          <button class="btn btn-sm" data-tv-key="KEY_ENTER" title="Unmutes audio on TV if browser paused sound">OK / Unmute</button>
+          <button class="btn btn-sm" data-tv-launch="TvHome0001.Home">Exit to Clean Home</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Secondary Card: Windows Native Wireless Display (Miracast) -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>2 · Native Windows Wireless Display (Miracast · Win + K)</h2>
+          <p>Use your TV as a true 2nd Windows monitor (Duplicate or Extend desktop at 60Hz).</p>
+        </div>
+        <button class="btn" id="btnMiracast">Open Windows Cast (Win + K)</button>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.5;">
+        Your PC supports Miracast via its <b>TP-Link Wireless USB Adapter</b> while keeping internet on Ethernet.
+        Make sure Wi-Fi is switched <b>On</b> in Windows (it doesn't have to connect to a router), click <b>Open Windows Cast</b>, and pick <b>Samsung BU8100 55 TV</b>.
+      </p>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="cast.js"></script>
+</body>
+</html>

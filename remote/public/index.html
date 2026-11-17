@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Clean TV Remote — Samsung BU8100</title>
+  <link rel="stylesheet" href="remote.css">
+</head>
+<body>
+  <div class="remote-wrapper">
+    <div class="remote-case">
+      <!-- Status & Power Header -->
+      <header class="remote-header">
+        <div class="tv-info">
+          <span class="tv-name" id="tvName">Samsung BU8100 55</span>
+          <div class="status-pill" id="statusPill">
+            <span class="dot"></span>
+            <span class="status-text" id="statusText">Connecting...</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a href="/cast.html" class="btn btn-cast" title="Screen Share / Cast PC to TV">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/>
+              <line x1="2" y1="20" x2="2.01" y2="20"/>
+            </svg>
+            <span>Cast</span>
+          </a>
+          <button class="btn btn-power" id="btnPower" title="Power (KEY_POWER)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.73 0"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- App Shortcuts Row -->
+      <section class="section app-section">
+        <div class="section-title">Quick Launch</div>
+        <div class="app-grid">
+          <button class="app-btn" data-launch="TvHome0001.Home" title="Clean TV Home">
+            <span class="app-tag">HOME</span>
+            <span class="app-label">Clean TV</span>
+          </button>
+          <button class="app-btn btn-yt" data-launch="tUb3Xq7Lm9.Tube" title="Ad-Free YouTube">
+            <span class="app-tag">AD-FREE</span>
+            <span class="app-label">YouTube</span>
+          </button>
+          <button class="app-btn" data-launch="rJeHak5zRg.Spotify" title="Spotify">
+            <span class="app-tag">MUSIC</span>
+            <span class="app-label">Spotify</span>
+          </button>
+          <button class="app-btn btn-tv" data-launch="org.tizen.channel-list" title="Live TV Tuner">
+            <span class="app-tag">DTV</span>
+            <span class="app-label">Live TV</span>
+          </button>
+          <button class="app-btn" data-launch="org.tizen.netflix-app" title="Netflix">
+            <span class="app-tag">CINEMA</span>
+            <span class="app-label">Netflix</span>
+          </button>
+          <button class="app-btn btn-movy" data-launch="org.tizen.browser" title="Movy (movy.sx)">
+            <span class="app-tag">FREE</span>
+            <span class="app-label">Movy</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Style Jumpers (1-5 & Dimmer) -->
+      <section class="section style-section">
+        <div class="style-row">
+          <button class="style-btn" data-key="KEY_1" title="1 · Cinema">1 Cinema</button>
+          <button class="style-btn" data-key="KEY_2" title="2 · Guide">2 Guide</button>
+          <button class="style-btn" data-key="KEY_3" title="3 · Editorial">3 Edit</button>
+          <button class="style-btn" data-key="KEY_4" title="4 · Gallery">4 Wall</button>
+          <button class="style-btn" data-key="KEY_5" title="5 · Lounge">5 Lounge</button>
+          <button class="style-btn btn-dim" data-key="KEY_0" title="Night Dimmer (KEY_0)">0 Dim</button>
+        </div>
+      </section>
+
+      <!-- Volume & Channel Rockers -->
+      <section class="section rockers-section">
+        <div class="rocker-col">
+          <button class="btn btn-rocker" data-key="KEY_VOLUP" title="Volume Up">VOL +</button>
+          <button class="btn btn-rocker-sub" data-key="KEY_MUTE" title="Mute">MUTE</button>
+          <button class="btn btn-rocker" data-key="KEY_VOLDOWN" title="Volume Down">VOL −</button>
+        </div>
+
+        <div class="center-controls">
+          <button class="btn btn-round" data-launch="com.samsung.tv.csfs" title="Stock Samsung Hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            <span>Hub</span>
+          </button>
+          <button class="btn btn-round" data-launch="org.tizen.SMSourceAPP" title="HDMI Inputs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 9v5M9.5 11.5 12 14l2.5-2.5"/>
+            </svg>
+            <span>Input</span>
+          </button>
+          <button class="btn btn-round" data-launch="com.samsung.tv.coba.setting" title="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span>Gear</span>
+          </button>
+        </div>
+
+        <div class="rocker-col">
+          <button class="btn btn-rocker" data-key="KEY_CHUP" title="Channel Up">CH +</button>
+          <button class="btn btn-rocker-sub" data-key="KEY_GUIDE" title="Guide">GUIDE</button>
+          <button class="btn btn-rocker" data-key="KEY_CHDOWN" title="Channel Down">CH −</button>
+        </div>
+      </section>
+
+      <!-- D-Pad Navigation -->
+      <section class="section dpad-section">
+        <div class="dpad-flank">
+          <button class="btn btn-circle" data-key="KEY_HOME" title="Home (KEY_HOME)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </button>
+          <button class="btn btn-circle" data-key="KEY_RETURN" title="Back (KEY_RETURN)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="dpad-wheel">
+          <button class="dpad-btn dpad-up" data-key="KEY_UP" title="Up">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-8 8h16z"/></svg>
+          </button>
+          <button class="dpad-btn dpad-left" data-key="KEY_LEFT" title="Left">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l8-8v16z"/></svg>
+          </button>
+          <button class="dpad-center" data-key="KEY_ENTER" title="Select / OK">
+            <span>OK</span>
+          </button>
+          <button class="dpad-btn dpad-right" data-key="KEY_RIGHT" title="Right">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 12l-8 8V4z"/></svg>
+          </button>
+          <button class="dpad-btn dpad-down" data-key="KEY_DOWN" title="Down">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20l8-8H4z"/></svg>
+          </button>
+        </div>
+
+        <div class="dpad-flank">
+          <button class="btn btn-circle" data-key="KEY_MENU" title="Menu (KEY_MENU)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <button class="btn btn-circle" data-key="KEY_INFO" title="Info (KEY_INFO)">
+            <span style="font-weight:700;font-size:16px;">i</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Media Playback Bar -->
+      <section class="section media-section">
+        <button class="btn btn-media" data-key="KEY_REWIND" title="Rewind">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+        </button>
+        <button class="btn btn-media btn-play" data-key="KEY_PLAY" title="Play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <button class="btn btn-media btn-pause" data-key="KEY_PAUSE" title="Pause">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button class="btn btn-media" data-key="KEY_FF" title="Fast Forward">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+        </button>
+      </section>
+
+      <!-- Keypad Toggle & Drawer -->
+      <section class="section keypad-section">
+        <button class="btn btn-toggle-keypad" id="toggleKeypad">
+          <span>Numeric Keypad (0–9)</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="keypad-grid" id="keypadGrid" hidden>
+          <button class="btn btn-digit" data-key="KEY_1">1</button>
+          <button class="btn btn-digit" data-key="KEY_2">2</button>
+          <button class="btn btn-digit" data-key="KEY_3">3</button>
+          <button class="btn btn-digit" data-key="KEY_4">4</button>
+          <button class="btn btn-digit" data-key="KEY_5">5</button>
+          <button class="btn btn-digit" data-key="KEY_6">6</button>
+          <button class="btn btn-digit" data-key="KEY_7">7</button>
+          <button class="btn btn-digit" data-key="KEY_8">8</button>
+          <button class="btn btn-digit" data-key="KEY_9">9</button>
+          <button class="btn btn-digit" data-key="KEY_PRECH">PRE-CH</button>
+          <button class="btn btn-digit" data-key="KEY_0">0</button>
+          <button class="btn btn-digit" data-key="KEY_CH_LIST">CH LIST</button>
+        </div>
+      </section>
+
+      <!-- Keyboard Shortcuts Footer -->
+      <footer class="remote-footer">
+        <span class="hint">Keyboard: <b>Arrow Keys</b> · <b>Enter</b> · <b>Esc/Backspace</b> · <b>H</b> (Home) · <b>M</b> (Mute) · <b>1-5</b></span>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="remote.js"></script>
+</body>
+</html>

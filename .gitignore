@@ -2,3 +2,5 @@ dist/
 app/js/key.js
 .DS_Store
 node_modules/
+**/tv_token.txt
+tv_token.txt

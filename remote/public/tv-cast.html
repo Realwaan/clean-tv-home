@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1">
+  <title>Clean TV Cast Receiver</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #050608;
+      color: #f1efe9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+    #stage {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      background: #000;
+      display: none;
+    }
+    #stage.active {
+      display: block;
+    }
+    .idle-screen {
+      position: fixed;
+      inset: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      text-align: center;
+      background: radial-gradient(circle at 50% 35%, #161b24 0%, #07090d 70%);
+    }
+    .idle-screen.hidden {
+      display: none;
+    }
+    .brand-tag {
+      font-size: 15px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: #f2b134;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+    .idle-title {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .idle-sub {
+      font-size: 24px;
+      color: rgba(241, 239, 233, 0.72);
+      max-width: 820px;
+      line-height: 1.5;
+      margin-bottom: 36px;
+    }
+    .status-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 20px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #f2b134;
+    }
+    .dot.live {
+      background: #22c55e;
+      box-shadow: 0 0 14px #22c55e;
+    }
+    .hud-pill {
+      position: fixed;
+      top: 28px;
+      right: 32px;
+      z-index: 20;
+      padding: 12px 22px;
+      border-radius: 999px;
+      background: rgba(10, 12, 16, 0.82);
+      border: 1px solid rgba(241, 239, 233, 0.2);
+      font-size: 18px;
+      color: #f1efe9;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .hud-pill.visible {
+      display: inline-flex;
+    }
+    .hud-pill.warn {
+      border-color: rgba(242, 177, 52, 0.7);
+      color: #f2b134;
+    }
+  </style>
+</head>
+<body>
+  <video id="stage" autoplay playsinline></video>
+
+  <div class="idle-screen" id="idleScreen">
+    <div class="brand-tag">CLEAN TV CAST RECEIVER</div>
+    <div class="idle-title" id="idleTitle">Ready for PC Screen</div>
+    <div class="idle-sub" id="idleSub">
+      Open <b>http://localhost:5050/cast.html</b> on your PC and click <b>Share PC Screen to TV</b>.
+    </div>
+    <div class="status-box">
+      <span class="dot" id="connDot"></span>
+      <span id="connText">Connecting to PC cast server...</span>
+    </div>
+  </div>
+
+  <div class="hud-pill" id="hudPill">
+    <span id="hudText">Live</span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var video = document.getElementById('stage');
+      var idleScreen = document.getElementById('idleScreen');
+      var idleTitle = document.getElementById('idleTitle');
+      var idleSub = document.getElementById('idleSub');
+      var connDot = document.getElementById('connDot');
+      var connText = document.getElementById('connText');
+      var hudPill = document.getElementById('hudPill');
+      var hudText = document.getElementById('hudText');
+
+      var ws = null;
+      var pc = null;
+      var mediaSource = null;
+      var sourceBuffer = null;
+      var mseQueue = [];
+      var activeMode = null;
+      var hudTimer = null;
+      var webrtcFallbackTimer = null;
+      var activeMime = 'video/webm;codecs=vp8,opus';
+
+      function showHud(text, isWarn, sticky) {
+        hudText.textContent = text;
+        hudPill.className = 'hud-pill visible' + (isWarn ? ' warn' : '');
+        clearTimeout(hudTimer);
+        if (!sticky) {
+          hudTimer = setTimeout(function () {
+            hudPill.className = 'hud-pill';
+          }, 4000);
+        }
+      }
+
+      function tryPlayVideo(label) {
+        video.className = 'active';
+        idleScreen.className = 'idle-screen hidden';
+        video.muted = false;
+        var p = video.play();
+        if (p && typeof p.then === 'function') {
+          p.then(function () {
+            showHud('PC Screen Live (' + label + ')', false, false);
+          }).catch(function () {
+            video.muted = true;
+            var p2 = video.play();
+            if (p2 && typeof p2.catch === 'function') { p2.catch(function () {}); }
+            showHud('Video Live · Press OK / Enter to Unmute Audio', true, true);
+          });
+        } else {
+          showHud('PC Screen Live (' + label + ')', false, false);
+        }
+      }
+
+      function cleanupStream() {
+        clearTimeout(webrtcFallbackTimer);
+        if (pc) {
+          try { pc.close(); } catch (e) {}
+          pc = null;
+        }
+        mseQueue = [];
+        if (sourceBuffer && mediaSource && mediaSource.readyState === 'open') {
+          try { mediaSource.endOfStream(); } catch (e) {}
+        }
+        sourceBuffer = null;
+        mediaSource = null;
+        try {
+          video.pause();
+          video.srcObject = null;
+          video.removeAttribute('src');
+          video.load();
+        } catch (e) {}
+        video.className = '';
+        idleScreen.className = 'idle-screen';
+        activeMode = null;
+      }
+
+      function sendSignal(obj) {
+        if (ws && ws.readyState === 1) {
+          ws.send(JSON.stringify(obj));
+        }
+      }
+
+      // ---- WebRTC Mode ----
+      function handleOffer(msg) {
+        cleanupStream();
+        activeMode = 'webrtc';
+        var RTCPC = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+        if (!RTCPC) {
+          sendSignal({ type: 'fallback-mse' });
+          return;
+        }
+
+        pc = new RTCPC({ iceServers: [] });
+        pc.onicecandidate = function (ev) {
+          if (ev.candidate) {
+            sendSignal({ type: 'ice', candidate: ev.candidate });
+          }
+        };
+        pc.ontrack = function (ev) {
+          if (ev.streams && ev.streams[0]) {
+            video.srcObject = ev.streams[0];
+          } else {
+            var ms = video.srcObject || new MediaStream();
+            ms.addTrack(ev.track);
+            video.srcObject = ms;
+          }
+          clearTimeout(webrtcFallbackTimer);
+          tryPlayVideo('WebRTC');
+        };
+        pc.oniceconnectionstatechange = function () {
+          if (!pc) return;
+          if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+            clearTimeout(webrtcFallbackTimer);
+          } else if (pc.iceConnectionState === 'failed') {
+            clearTimeout(webrtcFallbackTimer);
+            sendSignal({ type: 'fallback-mse' });
+          }
+        };
+
+        var desc = new RTCSessionDescription(msg.sdp);
+        pc.setRemoteDescription(desc).then(function () {
+          return pc.createAnswer();
+        }).then(function (answer) {
+          return pc.setLocalDescription(answer);
+        }).then(function () {
+          sendSignal({ type: 'answer', sdp: pc.localDescription });
+        }).catch(function () {
+          sendSignal({ type: 'fallback-mse' });
+        });
+
+        // If no video frame arrives within 6s, auto-switch to MSE stream
+        webrtcFallbackTimer = setTimeout(function () {
+          if (activeMode === 'webrtc' && (!video.videoWidth || video.readyState < 2)) {
+            sendSignal({ type: 'fallback-mse' });
+          }
+        }, 6000);
+      }
+
+      function handleIce(msg) {
+        if (!pc || !msg.candidate) return;
+        try {
+          pc.addIceCandidate(new RTCIceCandidate(msg.candidate)).catch(function () {});
+        } catch (e) {}
+      }
+
+      // ---- MSE WebM Fallback Mode ----
+      function initMse(mimeType) {
+        cleanupStream();
+        activeMode = 'mse';
+        activeMime = mimeType || 'video/webm;codecs=vp8,opus';
+        if (!window.MediaSource || !MediaSource.isTypeSupported(activeMime)) {
+          if (window.MediaSource && MediaSource.isTypeSupported('video/webm;codecs=vp8')) {
+            activeMime = 'video/webm;codecs=vp8';
+          } else {
+            idleTitle.textContent = 'Codec Unsupported';
+            idleSub.textContent = 'This TV browser cannot decode ' + activeMime;
+            return;
+          }
+        }
+
+        mediaSource = new MediaSource();
+        video.src = URL.createObjectURL(mediaSource);
+        mediaSource.addEventListener('sourceopen', function () {
+          if (activeMode !== 'mse') return;
+          try {
+            sourceBuffer = mediaSource.addSourceBuffer(activeMime);
+            sourceBuffer.mode = 'sequence';
+            sourceBuffer.addEventListener('updateend', flushMseQueue);
+            flushMseQueue();
+            tryPlayVideo('MSE Stream');
+          } catch (e) {
+            showHud('MSE Error: ' + e.message, true, true);
+          }
+        });
+      }
+
+      function flushMseQueue() {
+        if (!sourceBuffer || sourceBuffer.updating) return;
+
+        // Trim old buffer beyond 12s to preserve TV memory
+        try {
+          if (video.buffered && video.buffered.length > 0) {
+            var start = video.buffered.start(0);
+            var end = video.buffered.end(video.buffered.length - 1);
+            if (video.currentTime - start > 12) {
+              sourceBuffer.remove(start, video.currentTime - 5);
+              return;
+            }
+            // Catch up smoothly if latency drifts > 1.2s
+            if (end - video.currentTime > 1.2) {
+              video.currentTime = end - 0.12;
+            }
+          }
+        } catch (e) {}
+
+        if (mseQueue.length === 0) return;
+        var nextChunk = mseQueue.shift();
+        try {
+          sourceBuffer.appendBuffer(nextChunk);
+        } catch (e) {
+          mseQueue = [];
+        }
+      }
+
+      function handleBinaryChunk(arrayBuffer) {
+        if (activeMode !== 'mse') return;
+        mseQueue.push(arrayBuffer);
+        if (mseQueue.length > 40) {
+          mseQueue.splice(0, mseQueue.length - 10);
+        }
+        flushMseQueue();
+      }
+
+      // ---- WebSocket Connection ----
+      function connect() {
+        var proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+        var url = proto + location.host + '/ws/cast?role=receiver';
+        connDot.className = 'dot';
+        connText.textContent = 'Connecting to ' + location.host + '...';
+
+        ws = new WebSocket(url);
+        ws.binaryType = 'arraybuffer';
+
+        ws.onopen = function () {
+          connDot.className = 'dot live';
+          connText.textContent = 'Connected to PC · Waiting for screen share';
+        };
+
+        ws.onmessage = function (ev) {
+          if (ev.data instanceof ArrayBuffer) {
+            handleBinaryChunk(ev.data);
+            return;
+          }
+          var msg;
+          try { msg = JSON.parse(ev.data); } catch (e) { return; }
+
+          if (msg.type === 'welcome') {
+            if (msg.senderActive) {
+              connText.textContent = 'PC is ready · Starting stream...';
+            }
+          } else if (msg.type === 'offer') {
+            handleOffer(msg);
+          } else if (msg.type === 'ice') {
+            handleIce(msg);
+          } else if (msg.type === 'stream-config' && msg.mode === 'mse') {
+            initMse(msg.mimeType);
+          } else if (msg.type === 'sender-stopped' || msg.type === 'stop') {
+            cleanupStream();
+            connDot.className = 'dot live';
+            connText.textContent = 'Screen share stopped · Waiting for PC';
+            showHud('PC stopped screen share', false, false);
+          }
+        };
+
+        ws.onclose = function () {
+          connDot.className = 'dot';
+          connText.textContent = 'Reconnecting to PC...';
+          setTimeout(connect, 2000);
+        };
+      }
+
+      // Unmute / Fullscreen on Enter, OK, Space or Click
+      function unlockAudio() {
+        if (video.muted) {
+          video.muted = false;
+          video.volume = 1.0;
+          var p = video.play();
+          if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+          showHud('Audio Unmuted', false, false);
+        }
+      }
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ') {
+          unlockAudio();
+        }
+      });
+      document.addEventListener('click', unlockAudio);
+
+      connect();
+    })();
+  </script>
+</body>
+</html>

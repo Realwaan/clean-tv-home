@@ -143,10 +143,29 @@ aerotizen --tv <TV_IP> certs
 
 ---
 
+## PC Remote, Screen Cast & Power Off (`remote/`)
+
+Control your Samsung TV directly from your PC browser — with zero external npm dependencies:
+
+```sh
+cd remote
+node server.mjs --tv 192.168.254.113
+# Or on Windows: double-click remote\start-remote.bat or remote\cast_tv.bat
+```
+
+* **PC Remote (`http://localhost:5050`)**: Full virtual remote with Power toggle, D-Pad, Volume/Channel rockers, 1–5 layout jumpers, app shortcuts, and keyboard control (`Arrow Keys`, `Enter`, `Esc`, `H`, `M`, `1–5`).
+  * *First-time pairing:* Make sure TV **Settings → General → External Device Manager → Device Connection Manager → Access Notification** is set to **First Time Only** (not Off), then press **Allow** once on your TV screen; the pairing token saves locally to `remote/tv_token.txt`.
+* **PC-to-TV Screen Cast (`http://localhost:5050/cast.html`)**:
+  * **LAN Screen Cast (Ethernet & Wi-Fi):** Share your entire PC screen, window, or browser tab with audio via `WebRTC` (with automatic `MSE WebM` fallback for Chromium 85) and auto-launch the TV browser receiver (`http://<PC_LAN_IP>:5050/tv-cast.html`).
+  * **Native Windows Wireless Display (`Win + K` / Miracast):** 1-click shortcut to open Windows' Cast flyout when Wi-Fi Direct is available.
+* **1-Command Power Off**: `node remote/turn_off_tv.mjs <TV_IP>` sends `KEY_POWER` cleanly over `wss://<TV_IP>:8002`.
+
+---
+
 ## Project Architecture & Privacy
 
 ```text
-tv-home/
+clean-tv-home/
 ├── app/
 │   ├── config.xml          # Tizen widget manifest, partner privileges & on-boot watcher service
 │   ├── index.html          # Single 1920x1080 shell (styles, views, scripts)
@@ -162,6 +181,12 @@ tv-home/
 │   │   ├── styles.js       # 5 layout engines (cinema, guide, editorial, gallery, lounge)
 │   │   └── main.js         # State machine, navigation, 3-minute idle screensaver & background refresh
 │   └── service/            # TvHome0001.Watcher Node service (127.0.0.1:47791 + Art Mode guard)
+├── remote/
+│   ├── server.mjs          # Zero-dependency remote proxy + RFC 6455 WebSocket cast hub
+│   ├── turn_off_tv.mjs     # CLI power-off script over wss://:8002
+│   ├── start-remote.bat    # Windows 1-click remote launcher
+│   ├── cast_tv.bat         # Windows 1-click PC screen cast launcher
+│   └── public/             # Remote UI (index.html), PC Cast Studio (cast.html), TV Receiver (tv-cast.html)
 └── tools/
     ├── install.ps1         # Windows packaging & apps2samsung installer
     ├── install.sh          # POSIX packaging & AeroTizen installer
