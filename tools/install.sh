@@ -12,6 +12,7 @@ KEYFILE="$HOME/.config/tv-home/tmdb.key"
 rm -rf "$ROOT/dist/app"
 mkdir -p "$ROOT/dist"
 cp -R "$ROOT/app" "$ROOT/dist/app"
+rm -f "$ROOT/dist/app/appinfo.json" "$ROOT/dist/app/icon80.png" "$ROOT/dist/app/icon130.png"
 if [ -s "$KEYFILE" ]; then
   KEY="$(tr -d ' \r\n' < "$KEYFILE")"
   printf 'window.TVHOME_TMDB_KEY = "%s";\n' "$KEY" > "$ROOT/dist/app/js/key.js"

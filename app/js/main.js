@@ -29,8 +29,12 @@
     header = TH.styleOrder.map(function (key) {
       return { label: TH.styles[key].name, key: key, run: function () { setStyle(key); } };
     });
-    header.push({ label: 'Samsung', run: TH.openSamsungHome });
-    header.forEach(function (h) { h.node = nav.appendChild(el('span', 'hbtn', h.label)); });
+    header.push({ label: TH.platform === 'webos' ? 'LG Home' : 'Samsung', run: TH.openNativeHome || TH.openSamsungHome });
+    header.forEach(function (h, idx) {
+      h.node = nav.appendChild(el('span', 'hbtn', h.label));
+      h.node.setAttribute('data-nav-row', '0');
+      h.node.setAttribute('data-nav-col', String(idx));
+    });
 
     var status = document.getElementById('status');
     status.innerHTML = '<span class="wifi">' + TH.icon('wifi') + '</span>';
@@ -41,6 +45,8 @@
       };
       h.node = status.appendChild(el('span', 'ibtn'));
       h.node.innerHTML = TH.icon(which);
+      h.node.setAttribute('data-nav-row', '0');
+      h.node.setAttribute('data-nav-col', String(header.length));
       if (which === 'dimmer') {
         dimmerBtn = h.node;
         dimmerBtn.classList.toggle('active', dimmed);
@@ -163,10 +169,10 @@
 
     var inputMode = TH.watchingInput();
     if (inputMode) {
-      if (k === KEY.BACK || k === KEY.ESC) { e.preventDefault(); TH.leaveInput(); return; }
+      if (TH.isBack(k)) { e.preventDefault(); TH.leaveInput(); return; }
       if (inputMode === 'tv') {
-        if (k === KEY.UP || k === KEY.CH_UP) { e.preventDefault(); TH.tuneChannel(1); return; }
-        if (k === KEY.DOWN || k === KEY.CH_DOWN) { e.preventDefault(); TH.tuneChannel(-1); return; }
+        if (k === KEY.UP || TH.isChUp(k)) { e.preventDefault(); TH.tuneChannel(1); return; }
+        if (k === KEY.DOWN || TH.isChDown(k)) { e.preventDefault(); TH.tuneChannel(-1); return; }
         if (k === KEY.ENTER || k === KEY.CH_LIST) { e.preventDefault(); TH.openTvApp('channels'); return; }
         if (k === KEY.GUIDE) { e.preventDefault(); TH.openTvApp('guide'); return; }
         if (k === KEY.INFO) {
@@ -184,12 +190,12 @@
     else if (k === KEY.UP) { move(-1, 0); }
     else if (k === KEY.DOWN) { move(1, 0); }
     else if (k === KEY.ENTER) { activate(); }
-    else if (k === KEY.BACK || k === KEY.ESC) {
+    else if (TH.isBack(k)) {
       st.row = st.style === 'editorial' ? Math.min(st.app + 1, st.entries.length) : 1;
       st.col = st.style === 'editorial' ? 0 : st.app;
       render();
     }
-    else if (k === KEY.CH_UP || k === KEY.CH_DOWN) {
+    else if (TH.isChUp(k) || TH.isChDown(k)) {
       var tvIdx = findTvIndex();
       if (tvIdx >= 0) {
         st.app = tvIdx;
@@ -205,6 +211,68 @@
     else if (k === 48 || k === 96) { TH.toggleDimmer(); }
     else { return; }
     e.preventDefault();
+  });
+
+  // LG Magic Remote pointer hover, click & scroll wheel navigation (Chromium 34+ safe).
+  function findNavTarget(target) {
+    var node = target;
+    while (node && node !== document && node.getAttribute) {
+      if (node.getAttribute('data-nav-row') !== null) { return node; }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function applyPointerFocus(node) {
+    var row = parseInt(node.getAttribute('data-nav-row'), 10);
+    var col = parseInt(node.getAttribute('data-nav-col'), 10);
+    if (isNaN(row) || isNaN(col)) { return false; }
+    if (st.row === row && st.col === col) { return true; }
+    st.row = row;
+    st.col = col;
+    if (row === 1 && st.style !== 'editorial') { st.app = col; st.item = 0; }
+    if (row >= 1 && st.style === 'editorial') {
+      st.app = Math.min(row - 1, st.entries.length - 1);
+      st.item = col;
+    }
+    prefs.app = st.app;
+    TH.save(PREFS, prefs);
+    render();
+    return true;
+  }
+
+  document.addEventListener('mouseover', function (e) {
+    if (document.body.classList.contains('idle') || TH.watchingInput()) { return; }
+    var nav = findNavTarget(e.target);
+    if (nav) { applyPointerFocus(nav); }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (document.body.classList.contains('idle')) { resetIdle(); return; }
+    resetIdle();
+    if (TH.watchingInput()) { return; }
+    var nav = findNavTarget(e.target);
+    if (nav && applyPointerFocus(nav)) { activate(); }
+  });
+
+  var lastWheelAt = 0;
+  document.addEventListener('mousemove', function () {
+    if (document.body.classList.contains('idle')) { resetIdle(); }
+  });
+  document.addEventListener('wheel', function (e) {
+    if (document.body.classList.contains('idle')) { resetIdle(); return; }
+    resetIdle();
+    if (TH.watchingInput()) { return; }
+    var dy = e.deltaY || 0;
+    if (Math.abs(dy) <= 8) { return; }
+    var now = Date.now();
+    if (now - lastWheelAt < 140) { return; }
+    lastWheelAt = now;
+    if (st.style === 'editorial') {
+      move(dy > 0 ? 1 : -1, 0);
+    } else {
+      move(0, dy > 0 ? 1 : -1);
+    }
   });
 
   function refreshArt() {
@@ -250,7 +318,7 @@
   setInterval(paintWifi, 60000);
   resetIdle();
   TH.loadEntries(function (entries) {
-    st.entries = entries.length ? entries : [{ kind: 'samsung', name: 'Samsung Home', key: 'other', color: '#101216', fg: '#f1efe9' }];
+    st.entries = entries.length ? entries : [{ kind: 'nativeHome', name: TH.platform === 'webos' ? 'LG Home' : 'Samsung Home', key: 'other', color: '#101216', fg: '#f1efe9' }];
     st.app = Math.min(prefs.app || 0, st.entries.length - 1);
     st.row = st.style === 'editorial' ? Math.min(st.app + 1, st.entries.length) : 1;
     st.col = st.style === 'editorial' ? 0 : st.app;

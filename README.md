@@ -1,6 +1,6 @@
-# Clean TV Home for Samsung Tizen TVs
+# Clean TV Home — For Samsung Tizen & LG Smart TVs
 
-A fast, Swiss-editorial **1920×1080** home screen launcher for **Samsung Tizen Smart TVs** — zero ad banners, zero Samsung TV Plus bloat, hardware terrestrial TV tuner integration, ad-free YouTube (`TizenTube`), 1-click `Movy` (`movy.sx`) free cinema launcher, live weather, and a burn-in-safe ambient briefing mode. Built in plain ES5/CSS with zero frameworks or build step, tuned for rock-solid performance on older TV chipsets (including **Tizen 6.5 / Chromium 85**).
+A fast, Swiss-editorial **1920×1080** home screen launcher and universal PC remote/cast suite for **Samsung Tizen Smart TVs (2018–2025)** and **all LG Smart TVs (webOS 1.0–25 & NetCast)** — zero ad banners, zero home-screen bloat, native Live TV & HDMI integration, ad-free YouTube (`TizenTube` / `YouTube AdFree`), 1-click `Movy` (`movy.sx`) free cinema launcher, live weather, and a burn-in-safe ambient briefing mode. Built in strict ES5 + literal CSS (Chromium 34+ safe) with zero frameworks or build dependencies.
 
 ---
 
@@ -70,32 +70,33 @@ Samsung Tizen locks web rendering to its built-in browser engine (`org.tizen.bro
 
 ## Supported TVs
 
-| Status | Model / Series | Tizen / Engine | Notes |
+| Status | Brand / Series | OS / Engine | What Works |
 |---|---|---|---|
-| **Verified** | **Samsung BU8100 55"** (`UA55BU8100GXXP`, 2022) | **Tizen 6.5 (Chromium 85)** | Full verification over CDP & live terrestrial antenna + `TizenTube` + `Movy` |
-| **Verified** | **Samsung CU7000 65"** (`UN65CU7000DXZA`, 2023) | **Tizen 8.0** | Upstream hardware target |
-| **Compatible** | **Samsung Smart TVs (2018–2025)** | **Tizen 4.0 – 8.0+** | Crystal UHD (`NU`/`RU`/`TU`/`AU`/`BU`/`CU`/`DU`), QLED, Neo QLED, OLED |
-| **Compatible** | **Samsung The Frame** | **Tizen 5.0 – 8.0+** | Includes dedicated Art Mode guard (`app/service/artmode.js`) so booting/Art Mode is never interrupted |
+| **Verified** | **Samsung BU8100 55"** (`UA55BU8100GXXP`, 2022) | **Tizen 6.5 (Chromium 85)** | Full launcher (`.wgt`), CDP, live tuner, `TizenTube`, `Movy`, PC Remote, LAN/Miracast Cast |
+| **Verified** | **Samsung CU7000 65"** (`UN65CU7000DXZA`, 2023) | **Tizen 8.0** | Upstream hardware target (`.wgt` + PC Remote + Cast) |
+| **Compatible** | **Samsung Smart TVs (2018–2025)** | **Tizen 4.0 – 8.0+** | Crystal UHD (`NU`/`RU`/`TU`/`AU`/`BU`/`CU`/`DU`), QLED, Neo QLED, OLED, **The Frame** (with Art Mode guard) |
+| **Compatible** | **All LG webOS Smart TVs (2014–2025+)** | **webOS 1.0 – 25 (Chromium 34–120)** | `.ipk` launcher (`org.cleantv.home`), Magic Remote pointer + wheel, unrooted & Homebrew support, `YouTube AdFree`, `SSAP` PC Remote (`3001`/`3000`), 1-click Screen Cast |
+| **PC Remote Only** | **Legacy LG NetCast Smart TVs (2011–2013)** | **LG NetCast (`ROAP` `:8080`)** | **PC Web Remote**, **Scan Wi-Fi / LAN**, **6-digit PIN pairing**, and **CLI Power-Off** (manual browser/Miracast casting) |
 
-*Why it runs fast even on budget TVs:* fixed `1920×1080` canvas avoiding modern CSS features unsupported on Chromium 85 (`inset`, `aspect-ratio`, flex `gap`), GPU-only `transform`/`opacity` transitions (`<= 180ms`), and debounced backdrop preloading (`80ms`).
+*Why it runs fast even on older LG webOS 1–3 & budget Samsung TVs:* fixed `1920×1080` canvas avoiding CSS custom properties (`var(--...)`), `inset`, `aspect-ratio`, and flex `gap`; strict ES5 (`var`, `function`) JS; GPU-only `transform`/`opacity` transitions (`<= 180ms`); and debounced backdrop preloading (`80ms`).
 
 ---
 
 ## Do's and Don'ts
 
 ### DO
-- **Do wait 3–5 seconds after a cold power-on**: Tizen launches stock Smart Hub first while `TvHome0001.Watcher` initializes (`BOOT_DELAY` = 3s) and automatically brings **Clean TV Home** to the front.
-- **Do turn Developer Mode OFF after installation** *(optional)*: Your installed `.wgt` apps (`Clean TV Home` and `TizenTube`) remain signed and functional after toggling Developer Mode off. Only turn it back on when installing updates or new `.wgt` apps.
-- **Do install `TizenTube` (`tUb3Xq7Lm9.Tube`)** for ad-free YouTube (available in Releases or via `apps2samsung`); Clean TV Home hides stock YouTube automatically when detected.
-- **Do use number keys `1–5` and `0`** on your remote for instant layout switching and Night Dimmer.
-- **Do use the top-right `Samsung` button** whenever you need stock Tizen menus, app store downloads, or picture mode tweaks.
+- **Do wait 3–5 seconds after a cold power-on (Samsung)**: Tizen launches stock Smart Hub first while `TvHome0001.Watcher` initializes (`BOOT_DELAY` = 3s) and brings **Clean TV Home** to the front automatically.
+- **Do assign Clean TV Home to a Quick Access key on LG (`Hold 1`)**: On unrooted LG webOS TVs, open Clean TV Home once, then **hold number `1` on your LG remote** to bind 1-press launch — or enable **Homebrew Channel Autostart** if rooted.
+- **Do turn Developer Mode OFF after installation on Samsung** *(optional)*: Your installed `.wgt` apps remain signed and functional after toggling Developer Mode off. *(Note: LG Developer Mode requires renewing/toggling the Dev Mode timer periodically unless using Homebrew Channel.)*
+- **Do install `TizenTube` (Samsung) or `YouTube AdFree` (LG)** for ad-free YouTube; Clean TV Home automatically targets `tUb3Xq7Lm9.Tube` on Tizen and `youtube.leanback.v4` on webOS.
+- **Do use number keys `1–5` and `0` (plus LG Magic Remote pointer & scroll wheel)** for instant layout switching and Night Dimmer.
+- **Do use the top-right `Samsung` / `LG Home` button** whenever you need stock TV menus, picture settings, or app store downloads.
 
 ### DON'T
-- **Don't run Factory Reset / Smart Hub Reset** unless you intend to re-sideload — resetting removes sideloaded `.wgt` apps and Partner signing certificates.
-- **Don't install multiple Home-button watcher launchers simultaneously** (e.g., running both `AeroTizen` and `Clean TV Home`); two services polling port `8001` will conflict when pressing Home.
-- **Don't expect a `.wgt` app to modify OS DNS (`94.140.14.14`) automatically** — Tizen sandboxes system network configuration to Samsung's built-in Settings app.
-- **Don't commit `app/js/key.js` or `dist/`** if you add a personal TMDB API key (both are git-ignored by default).
-- **Don't use Tizen 3.0 or older (pre-2018)** or **non-Tizen Samsung monitors/TVs (Orsay)** — those platforms lack modern ES5/Chromium WebView and port `8001` app controls.
+- **Don't run Factory Reset / Smart Hub Reset** unless you intend to re-sideload — resetting removes sideloaded `.wgt`/`.ipk` apps and certificates.
+- **Don't install multiple Home-button watcher launchers simultaneously on Samsung** (e.g., running both `AeroTizen` and `Clean TV Home`).
+- **Don't use Tizen 3.0 or older (pre-2018 Samsung / Orsay)** for `.wgt` sideloading — port `8001` watcher APIs are unavailable there.
+- **Don't commit `app/js/key.js`, `tv_token.txt`, `tv_tokens.json`, `tv_config.json`, or `dist/`** (all are git-ignored by default).
 
 ---
 
@@ -112,16 +113,17 @@ Samsung Tizen locks web rendering to its built-in browser engine (`org.tizen.bro
 | `Channel List` | Open Samsung Terrestrial Channel Directory (`org.tizen.channel-list`) |
 | `Guide` | Open Broadcast Program Guide EPG (`com.samsung.tv.coba.epg`) |
 | `Info` *(in Live TV)* | Show current channel banner (`Ch X · Station`) |
-| `Home` | Return immediately to Clean TV Home (handled by `TvHome0001.Watcher`) |
+| `Home` | Return immediately to Clean TV Home (handled by `TvHome0001.Watcher` on Tizen; Hold `1` / Autostart on webOS) |
+| `Pointer / Wheel` *(LG)* | LG Magic Remote hover focus, click-to-launch, and scroll-wheel browsing across all 5 views |
 
 ---
 
-## Installation
+## Installation — Samsung Tizen TVs (`.wgt`)
 
 ### Prerequisites
 1. On your Samsung TV, open **Apps** → press **`1 2 3 4 5`** on the remote → enable **Developer Mode** and enter your PC's local IP address → reboot the TV (hold Power until Samsung logo appears).
 2. Download **[apps2samsung](https://github.com/OneLiberty/apps2samsung)** (Windows/macOS/Linux Partner certificate signer & installer) **or** [AeroTizen CLI](https://github.com/helalaou/AeroTizen).
-3. Grab the pre-built **`tv-home.wgt`** (and optionally **`tizen-youtube-tizen-5.5.wgt`** for ad-free YouTube) from [Releases](../../releases), **or** build from source below.
+3. Grab **`tv-home.wgt`** (and optionally **`tizen-youtube-tizen-5.5.wgt`** for ad-free YouTube) from [Releases](../../releases), **or** build from source below.
 
 ### Option A — Build & Install on Windows (PowerShell)
 ```powershell
@@ -143,22 +145,45 @@ aerotizen --tv <TV_IP> certs
 
 ---
 
-## PC Remote, Screen Cast & Power Off (`remote/`)
+## Installation — LG webOS TVs (`.ipk`, 2014–2025+)
 
-Control your Samsung TV directly from your PC browser — with zero external npm dependencies:
+1. Grab **`org.cleantv.home_0.2.0_all.ipk`** from [Releases](../../releases) **or** build it with zero external dependencies using `node tools/package-lg.mjs` (or `.\tools\install-lg.ps1` / `./tools/install-lg.sh`).
+2. **Method A — GUI via [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) (Easiest, Windows/macOS/Linux):**
+   - Install **Developer Mode** from the LG Content Store on your TV, sign in, and turn **Dev Mode Status** ON (or install via **Homebrew Channel** if rooted).
+   - Connect your TV in **webOS Dev Manager**, click **Install** (or drag & drop `org.cleantv.home_0.2.0_all.ipk`), then launch **Clean TV Home**.
+3. **Method B — CLI via `@webos-tools/cli`:**
+   ```sh
+   ares-install -d <lg-device-name> dist/org.cleantv.home_0.2.0_all.ipk
+   ares-launch  -d <lg-device-name> org.cleantv.home
+   ```
+4. **Optional Ad-Free YouTube (`YouTube AdFree`) & Autostart on LG:**
+   - Install **YouTube AdFree (`youtube-webos`)** right inside **webOS Dev Manager → Apps** (uninstall stock YouTube first). Clean TV Home launches `youtube.leanback.v4` directly.
+   - **Quick Access shortcut (unrooted LG):** With Clean TV Home open, **hold `1` on your LG remote** to bind it to Quick Access, or enable **Autostart** in **webOS Homebrew Channel** if rooted.
+
+---
+
+## Universal PC Remote, Screen Cast & Power Off (`remote/`)
+
+Control **Samsung Tizen**, **LG webOS (2014–2025+)**, and **LG NetCast (2011–2013)** TVs directly from your PC browser — with zero external npm dependencies:
 
 ```sh
 cd remote
-node server.mjs --tv 192.168.254.113
+node server.mjs --tv <TV_IP> --brand auto
+# Or override explicitly: --brand samsung | lg-webos | lg-netcast
 # Or on Windows: double-click remote\start-remote.bat or remote\cast_tv.bat
 ```
 
-* **PC Remote (`http://localhost:5050`)**: Full virtual remote with Power toggle, D-Pad, Volume/Channel rockers, 1–5 layout jumpers, app shortcuts, and keyboard control (`Arrow Keys`, `Enter`, `Esc`, `H`, `M`, `1–5`).
-  * *First-time pairing:* Make sure TV **Settings → General → External Device Manager → Device Connection Manager → Access Notification** is set to **First Time Only** (not Off), then press **Allow** once on your TV screen; the pairing token saves locally to `remote/tv_token.txt`.
+* **PC Remote (`http://localhost:5050`)**: Virtual remote with Power / Wake-on-LAN toggle, D-Pad, Volume/Channel rockers, 1–5 layout jumpers, cross-platform app shortcuts (`Clean TV`, `YouTube`, `Spotify`, `Live TV`, `Netflix`, `Movy`), and PC keyboard control (`Arrow Keys`, `Enter`, `Esc`, `H`, `M`, `1–5`).
+  * **Switch TV & Scan Wi-Fi / LAN:** Click the TV name at the top of the Remote (`▾ Switch TV`) to enter any IP or click **Scan Wi-Fi / LAN** to auto-discover Samsung & LG TVs.
+  * **First-time pairing:**
+    * **Samsung Tizen:** Ensure **Device Connection Manager → Access Notification** is **First Time Only** (not Off), then press **Allow** once on your TV.
+    * **LG webOS (1.0–25):** Works automatically over `wss://:3001` or `ws://:3000` (unsigned manifest avoids `403 blacklisted certificate`); press **Allow** once on the LG TV popup.
+    * **LG NetCast (2011–2013):** Displays a **6-digit PIN** on the TV (`:8080` ROAP) — enter it into the PIN bar inside the PC Remote once.
+  * Pairing keys persist privately per TV IP in `remote/tv_tokens.json` (plus `remote/tv_token.txt`).
 * **PC-to-TV Screen Cast (`http://localhost:5050/cast.html`)**:
-  * **LAN Screen Cast (Ethernet & Wi-Fi):** Share your entire PC screen, window, or browser tab with audio via `WebRTC` (with automatic `MSE WebM` fallback for Chromium 85) and auto-launch the TV browser receiver (`http://<PC_LAN_IP>:5050/tv-cast.html`).
+  * **LAN Screen Cast (Ethernet & Wi-Fi):** Share your entire PC screen, window, or browser tab with audio via `WebRTC` (with automatic `MSE WebM` fallback for older TV browsers) and auto-launch the receiver (`http://<PC_LAN_IP>:5050/tv-cast.html`) on **Samsung Tizen** or **LG webOS** TVs.
   * **Native Windows Wireless Display (`Win + K` / Miracast):** 1-click shortcut to open Windows' Cast flyout when Wi-Fi Direct is available.
-* **1-Command Power Off**: `node remote/turn_off_tv.mjs <TV_IP>` sends `KEY_POWER` cleanly over `wss://<TV_IP>:8002`.
+* **1-Command CLI Power Off**: `node remote/turn_off_tv.mjs --tv <TV_IP>` (auto-detects Samsung Tizen, LG webOS, or LG NetCast).
 
 ---
 
@@ -167,29 +192,35 @@ node server.mjs --tv 192.168.254.113
 ```text
 clean-tv-home/
 ├── app/
-│   ├── config.xml          # Tizen widget manifest, partner privileges & on-boot watcher service
-│   ├── index.html          # Single 1920x1080 shell (styles, views, scripts)
-│   ├── css/home.css        # Swiss-editorial design tokens & Chromium 85 safe layout rules
+│   ├── appinfo.json        # LG webOS widget manifest (org.cleantv.home) + icon80.png / icon130.png
+│   ├── config.xml          # Samsung Tizen widget manifest, partner privileges & watcher service
+│   ├── index.html          # Shared 1920x1080 shell (styles, views, scripts)
+│   ├── css/home.css        # Swiss-editorial literal CSS (Chromium 34+ / webOS 1-25 & Tizen 4-8 safe)
 │   ├── art/                # 11 bundled CC0 paintings from Art Institute of Chicago (offline fallback)
 │   ├── fonts/              # Self-hosted WOFF2 (Big Shoulders Display, Hanken Grotesk, JetBrains Mono)
 │   ├── js/
-│   │   ├── env.js          # Hardware key registration, localStorage, clock & toast helpers
-│   │   ├── system.js       # App filtering, TizenTube prioritization, Movy URL launcher, Live TV/HDMI tuner
+│   │   ├── env.js          # Dual platform detection (Tizen + webOS PalmServiceBridge), LG/Samsung keys
+│   │   ├── system.js       # Cross-platform app discovery, YouTube AdFree/TizenTube, Movy, Live TV/HDMI
 │   │   ├── art.js          # TVMaze live show art (keyless), optional TMDB client, MOVY_CARDS & TV_CARDS
 │   │   ├── feeds.js        # Local weather (ipwho.is + wttr.in) & BBC World RSS briefing
 │   │   ├── logos.js        # Vector brand paths (YouTube, Spotify, Netflix, Brave shield, TV, system icons)
-│   │   ├── styles.js       # 5 layout engines (cinema, guide, editorial, gallery, lounge)
-│   │   └── main.js         # State machine, navigation, 3-minute idle screensaver & background refresh
-│   └── service/            # TvHome0001.Watcher Node service (127.0.0.1:47791 + Art Mode guard)
+│   │   ├── styles.js       # 5 layout engines + Magic Remote hover/click targets
+│   │   └── main.js         # State machine, D-Pad + Magic Remote wheel/pointer navigation, idle clock
+│   └── service/            # TvHome0001.Watcher Node service (Tizen 127.0.0.1:47791 + Art Mode guard)
 ├── remote/
-│   ├── server.mjs          # Zero-dependency remote proxy + RFC 6455 WebSocket cast hub
-│   ├── turn_off_tv.mjs     # CLI power-off script over wss://:8002
+│   ├── drivers/            # samsung-tizen.mjs, lg-webos.mjs, lg-netcast.mjs, discovery.mjs, wol.mjs, storage.mjs
+│   ├── server.mjs          # Zero-dependency multi-brand remote proxy + RFC 6455 WebSocket cast hub
+│   ├── turn_off_tv.mjs     # Auto-detect CLI power-off script (Samsung + LG webOS + LG NetCast)
 │   ├── start-remote.bat    # Windows 1-click remote launcher
 │   ├── cast_tv.bat         # Windows 1-click PC screen cast launcher
-│   └── public/             # Remote UI (index.html), PC Cast Studio (cast.html), TV Receiver (tv-cast.html)
+│   └── public/             # Remote UI + TV Switcher (index.html), PC Cast (cast.html), TV Receiver (tv-cast.html)
 └── tools/
-    ├── install.ps1         # Windows packaging & apps2samsung installer
-    ├── install.sh          # POSIX packaging & AeroTizen installer
+    ├── install.ps1         # Windows Samsung Tizen (.wgt) builder & installer
+    ├── install.sh          # POSIX Samsung Tizen builder & AeroTizen installer
+    ├── package-lg.mjs      # Zero-dependency LG webOS (.ipk) packager (prefers ares-package if installed)
+    ├── install-lg.ps1      # Windows LG webOS (.ipk) builder & installer
+    ├── install-lg.sh       # POSIX LG webOS (.ipk) builder & installer
+    ├── verify-all.mjs      # Automated static, .ipk binary, mock 3-brand drivers & headless Chrome checks
     ├── screens.cjs         # Headless Playwright verification & screenshot script (all 5 styles)
     └── tv-check.mjs        # On-TV CDP performance/FPS/error audit script
 ```
@@ -201,7 +232,10 @@ clean-tv-home/
 ## Verification & Diagnostics
 
 ```sh
-# Desktop verification across all 5 styles (1920x1080, zero errors):
+# Full multi-brand suite (ES5/CSS audit, .ipk binary check, mock LG webOS/NetCast/Samsung drivers & headless Chrome CDP):
+node tools/verify-all.mjs
+
+# Desktop screenshot check across all 5 styles (1920x1080):
 node tools/screens.cjs <path-to-playwright> ./out
 
 # On-TV live performance check (with aerotizen inspector forwarded to localhost:9222):
@@ -217,7 +251,7 @@ Licensed under the **[MIT License](LICENSE)**.
 
 - **Clean TV Home (Upstream Base)** — Originally created by **Sai Krishna Madavarapu** (`MIT`).
 - **Home-Button Watcher Service (`app/service/`)** — Adapted from **[AeroTizen](https://github.com/helalaou/AeroTizen) 2.5.0** by **Hamza El Alaoui** (`MIT`, see `app/service/LICENSE-AeroTizen`).
-- **Ad-Free YouTube (`TizenTube`)** — Companion `.wgt` (`tUb3Xq7Lm9.Tube`) by **reisxd / TizenTube** contributors.
+- **Ad-Free YouTube (`TizenTube` / `YouTube AdFree`)** — Samsung `.wgt` (`tUb3Xq7Lm9.Tube`) by **reisxd / TizenTube** contributors and LG webOS `.ipk` (`youtube.leanback.v4`) by **webosbrew**.
 - **Typography** — *Big Shoulders Display*, *Hanken Grotesk*, *JetBrains Mono* (`SIL Open Font License`).
 - **Icons** — Brand paths from Simple Icons (`CC0-1.0`) & Material Design Icons (`Apache-2.0`). Brand marks remain trademarks of their respective owners.
-- **Artwork & Metadata** — **TVMaze** (`CC BY-SA`), **Art Institute of Chicago** (`CC0`), and optional **TMDB** (`api.themoviedb.org`). This project is not endorsed or certified by Samsung, YouTube, Netflix, Spotify, Movy, or TMDB.
+- **Artwork & Metadata** — **TVMaze** (`CC BY-SA`), **Art Institute of Chicago** (`CC0`), and optional **TMDB** (`api.themoviedb.org`). This project is not endorsed or certified by Samsung, LG, YouTube, Netflix, Spotify, Movy, or TMDB.

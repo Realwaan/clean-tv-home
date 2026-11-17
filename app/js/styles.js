@@ -7,6 +7,12 @@
   var el = TH.el;
   var bg = { front: null, back: null, url: '', timer: 0 };
 
+  function navAttr(node, row, col) {
+    node.setAttribute('data-nav-row', String(row));
+    node.setAttribute('data-nav-col', String(col));
+    return node;
+  }
+
   function showArt(url) {
     if (!bg.front) {
       bg.front = document.getElementById('bgA');
@@ -84,8 +90,8 @@
     build: function (st, stage) {
       this.copy = copyBlock(true);
       this.row = el('div', 'row apps');
-      this.tiles = st.entries.map(function (e) {
-        var t = tile(e);
+      this.tiles = st.entries.map(function (e, i) {
+        var t = navAttr(tile(e), 1, i);
         this.row.appendChild(t);
         return t;
       }, this);
@@ -111,8 +117,8 @@
       this.copy = copyBlock(false);
       var band = el('div', 'band');
       this.appRow = el('div', 'row apps');
-      this.tiles = st.entries.map(function (e) {
-        var t = tile(e);
+      this.tiles = st.entries.map(function (e, i) {
+        var t = navAttr(tile(e), 1, i);
         this.appRow.appendChild(t);
         return t;
       }, this);
@@ -130,8 +136,8 @@
       if (this.cardsFor !== st.app) {
         this.cardsFor = st.app;
         this.cardRow.innerHTML = '';
-        this.cards = items.map(function (it) {
-          var c = el('div', 'card');
+        this.cards = items.map(function (it, i) {
+          var c = navAttr(el('div', 'card'), 2, i);
           c.style.backgroundImage = 'url("' + it.card + '")';
           var cap = el('div', 'card-copy');
           cap.appendChild(el('span', 'card-title', it.title));
@@ -176,8 +182,8 @@
     build: function (st, stage) {
       TH.hideArt();
       this.list = el('div', 'ed-list');
-      this.items = st.entries.map(function (e) {
-        var row = el('div', 'ed-item');
+      this.items = st.entries.map(function (e, i) {
+        var row = navAttr(el('div', 'ed-item'), i + 1, 0);
         row.appendChild(el('span', 'ed-title', e.name));
         row.appendChild(el('span', 'ed-sub', e.sub || 'Open'));
         this.list.appendChild(row);
@@ -266,8 +272,8 @@
       title.appendChild(this.meta);
 
       this.dock = el('div', 'row apps gal-dock');
-      this.tiles = st.entries.map(function (e) {
-        var t = tile(e);
+      this.tiles = st.entries.map(function (e, i) {
+        var t = navAttr(tile(e), 1, i);
         this.dock.appendChild(t);
         return t;
       }, this);
@@ -309,8 +315,8 @@
 
       this.appWrap = el('div', 'lounge-apps');
       this.appRow = el('div', 'row apps');
-      this.tiles = st.entries.map(function (e) {
-        var t = tile(e);
+      this.tiles = st.entries.map(function (e, i) {
+        var t = navAttr(tile(e), 1, i);
         this.appRow.appendChild(t);
         return t;
       }, this);

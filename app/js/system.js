@@ -1,10 +1,10 @@
-// Apps, Terrestrial TV, HDMI inputs and the Home-button watcher.
+// Apps, Terrestrial TV, HDMI inputs and native home/watcher bridge (Samsung Tizen & LG webOS, ES5 safe).
 (function (TH) {
   'use strict';
 
   var tz = TH.tz;
 
-  // Preinstalled streamers are known to the TV's local API by store id; the watcher polls that API.
+  // Preinstalled streamers are known to Tizen's local API by store id; the watcher polls that API.
   var STORE_IDS = {
     'org.tizen.netflix-app': '3201907018807',
     'rJeHak5zRg.Spotify': '3201606009684',
@@ -13,6 +13,7 @@
   var YOUTUBE_STORE_ID = '111299001912';
   var INPUTS = 'tvhome.inputs.v1';
   var HIDDEN = /service|emanual|companion|dummy|widget|klyq|DclHome001|TvHome0001|GoogleDuo|SecurityCenter|IewQEY143t|J9fZJDMi1v|h6D3hH79er|primevideo|DisneyPlus|aria-video|AwJZqXfE51/i;
+  var WEBOS_HIDDEN = /org\.cleantv\.home|^com\.webos\.service|^com\.palm\.service|screensaver|inputpicker|livetv|tvguide|notification|firstuse/i;
   var ORDER = ['youtube', 'spotify', 'live tv', 'netflix', 'movy', 'internet', 'browser'];
 
   var BRAND = {
@@ -33,6 +34,14 @@
     scan: 'org.tizen.channel-search'
   };
 
+  var WEBOS_SYSTEM_APPS = {
+    settings: ['com.palm.app.settings', 'com.webos.app.selfdiagnosis'],
+    inputs: ['com.webos.app.inputpicker', 'com.webos.app.hdmi1'],
+    channels: ['com.webos.app.livetv'],
+    guide: ['com.webos.app.tvguide', 'com.webos.app.livetv'],
+    scan: ['com.palm.app.settings']
+  };
+
   function brandFor(name) {
     var lower = String(name || '').toLowerCase();
     for (var prefix in BRAND) {
@@ -50,8 +59,10 @@
   }
 
   function normalizeName(id, name) {
-    if (id === 'rJeHak5zRg.Spotify' || /^spotify/i.test(name || '')) { return 'Spotify'; }
-    if (id === 'org.tizen.browser' || /^(internet|browser)$/i.test(name || '')) { return 'Movy'; }
+    if (id === 'rJeHak5zRg.Spotify' || id === 'spotify-beehive' || /^spotify/i.test(name || '')) { return 'Spotify'; }
+    if (id === 'youtube.leanback.v4') { return 'YouTube'; }
+    if (id === 'netflix') { return 'Netflix'; }
+    if (id === 'org.tizen.browser' || id === 'com.webos.app.browser' || /^(internet|browser|web browser)$/i.test(name || '')) { return 'Movy'; }
     return name;
   }
 
@@ -94,24 +105,107 @@
     return null;
   };
 
-  function tvEntry(source, chInfo) {
+  function tvEntry(source, chInfo, customId) {
     return {
-      kind: 'tv', id: 'tv1', name: 'Live TV',
-      sub: (chInfo && chInfo.label) ? chInfo.label : 'Terrestrial',
+      kind: 'tv', id: customId || 'tv1', name: 'Live TV',
+      sub: (chInfo && chInfo.label) ? chInfo.label : (TH.platform === 'webos' ? 'Broadcast' : 'Terrestrial'),
       raw: source || { type: 'TV', number: 1 },
       key: 'tv', color: '#101216', fg: '#f1efe9', logo: 'tv'
     };
   }
 
-  function hdmiEntry(source) {
-    var name = source.editName || ('HDMI ' + source.number);
+  function hdmiEntry(source, customId) {
+    var num = (source && source.number) || 1;
+    var name = (source && source.editName) || ('HDMI ' + num);
     return {
-      kind: 'hdmi', id: 'hdmi' + source.number, name: name, sub: 'HDMI ' + source.number,
-      raw: source, key: 'hdmi', color: '#101216', fg: '#f1efe9'
+      kind: 'hdmi', id: customId || ('hdmi' + num), name: name, sub: 'HDMI ' + num,
+      raw: source || { type: 'HDMI', number: num }, key: 'hdmi', color: '#101216', fg: '#f1efe9'
     };
   }
 
+  function buildWebosDefaults() {
+    var yt = appEntry('youtube.leanback.v4', 'YouTube', '');
+    yt.sub = 'Video · AdFree Ready';
+    return [
+      yt,
+      appEntry('spotify-beehive', 'Spotify', ''),
+      tvEntry({ type: 'TV', number: 1 }, null, 'com.webos.app.livetv'),
+      appEntry('netflix', 'Netflix', ''),
+      appEntry('com.webos.app.browser', 'Movy', '')
+    ];
+  }
+
+  function loadEntriesWebOS(done) {
+    var entries = [];
+
+    function withWebosInputs() {
+      TH.luna('luna://com.webos.service.eim/getAllInputStatus', {}, function (res) {
+        var devices = res && res.devices;
+        if (devices && devices.length) {
+          var hdmiCount = 0;
+          for (var i = 0; i < devices.length; i++) {
+            var d = devices[i];
+            if (!d) { continue; }
+            var label = d.label || d.name || '';
+            var appId = d.appId || '';
+            if (!/hdmi/i.test(appId + ' ' + label + ' ' + (d.id || ''))) { continue; }
+            hdmiCount += 1;
+            entries.push(hdmiEntry({ type: 'HDMI', number: hdmiCount, editName: label || ('HDMI ' + hdmiCount) }, appId || ('com.webos.app.hdmi' + hdmiCount)));
+          }
+          if (!hdmiCount) {
+            entries.push(hdmiEntry({ type: 'HDMI', number: 1 }, 'com.webos.app.hdmi1'));
+            entries.push(hdmiEntry({ type: 'HDMI', number: 2 }, 'com.webos.app.hdmi2'));
+          }
+        } else {
+          entries.push(hdmiEntry({ type: 'HDMI', number: 1 }, 'com.webos.app.hdmi1'));
+          entries.push(hdmiEntry({ type: 'HDMI', number: 2 }, 'com.webos.app.hdmi2'));
+        }
+        done(entries);
+      }, function () {
+        entries.push(hdmiEntry({ type: 'HDMI', number: 1 }, 'com.webos.app.hdmi1'));
+        entries.push(hdmiEntry({ type: 'HDMI', number: 2 }, 'com.webos.app.hdmi2'));
+        done(entries);
+      });
+    }
+
+    TH.luna('luna://com.webos.applicationManager/listLaunchPoints', {}, function (res) {
+      var list = res && res.launchPoints;
+      if (!list || !list.length) {
+        entries = buildWebosDefaults();
+        entries.sort(function (a, b) { return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name); });
+        return withWebosInputs();
+      }
+      var seenIds = {};
+      for (var i = 0; i < list.length; i++) {
+        var lp = list[i];
+        if (!lp || !lp.id || lp.visible === false) { continue; }
+        if (WEBOS_HIDDEN.test(lp.id) || seenIds[lp.id]) { continue; }
+        seenIds[lp.id] = true;
+        var item = appEntry(lp.id, lp.title || lp.id, lp.icon || lp.largeIcon || '');
+        if (lp.id === 'youtube.leanback.v4' && /adfree|homebrew|ytaf/i.test((lp.title || '') + ' ' + (lp.icon || ''))) {
+          item.sub = 'Ad-Free';
+        }
+        entries.push(item);
+      }
+      entries.push(tvEntry({ type: 'TV', number: 1 }, null, 'com.webos.app.livetv'));
+      if (entries.length < 2) {
+        entries = buildWebosDefaults();
+      }
+      entries.sort(function (a, b) { return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name); });
+      withWebosInputs();
+    }, function () {
+      // Unrooted webOS 5-25 ACG fallback: use well-known public LG launch IDs directly.
+      entries = buildWebosDefaults();
+      entries.sort(function (a, b) { return rank(a.name) - rank(b.name) || a.name.localeCompare(b.name); });
+      withWebosInputs();
+    });
+  }
+
   TH.loadEntries = function (done) {
+    if (TH.platform === 'webos') {
+      return loadEntriesWebOS(done);
+    }
+
     if (!tz || !tz.application) {
       var demo = [
         appEntry('tUb3Xq7Lm9.Tube', 'YouTube', ''),
@@ -195,7 +289,20 @@
   // ---- launching ----
   TH.openUrl = function (url) {
     var target = url || 'https://www.movy.sx/';
-    TH.toast('Opening Movy · Tip: Profile icon → Turn off "Show ads"');
+    if (/movy\.sx/i.test(target)) {
+      TH.toast('Opening Movy · Tip: Profile icon → Turn off "Show ads"');
+    } else {
+      TH.toast('Opening Browser');
+    }
+    if (TH.platform === 'webos') {
+      TH.luna('luna://com.webos.applicationManager/launch', {
+        id: 'com.webos.app.browser',
+        params: { target: target }
+      }, null, function () {
+        TH.toast('Could not open LG Browser');
+      });
+      return;
+    }
     if (!tz || !tz.application) { return; }
     var storeId = STORE_IDS['org.tizen.browser'];
     function fallback() {
@@ -219,10 +326,28 @@
     }
   };
 
+  function launchWebosApp(appId, label) {
+    TH.luna('luna://com.webos.applicationManager/launch', { id: appId }, null, function () {
+      TH.toast('Could not open ' + (label || appId));
+    });
+  }
+
   TH.launch = function (entry) {
-    if (entry.kind === 'hdmi' || entry.kind === 'tv') { return showInput(entry); }
-    if (entry.kind === 'samsung') { return TH.openSamsungHome(); }
+    if (entry.kind === 'samsung' || entry.kind === 'nativeHome') { return TH.openNativeHome(); }
     if (entry.url) { return TH.openUrl(entry.url); }
+
+    if (TH.platform === 'webos') {
+      if (entry.kind === 'tv') {
+        return launchWebosApp('com.webos.app.livetv', entry.name);
+      }
+      if (entry.kind === 'hdmi') {
+        var hdmiNum = (entry.raw && entry.raw.number) ? entry.raw.number : 1;
+        return launchWebosApp(entry.id || ('com.webos.app.hdmi' + hdmiNum), entry.name);
+      }
+      return launchWebosApp(entry.id, entry.name);
+    }
+
+    if (entry.kind === 'hdmi' || entry.kind === 'tv') { return showInput(entry); }
     if (!tz || !tz.application) { return TH.toast('Opening ' + entry.name); }
     function failed() { TH.tell('/home'); TH.toast('Could not open ' + entry.name); }
     if (entry.storeId === YOUTUBE_STORE_ID) {
@@ -235,15 +360,36 @@
     try { tz.application.launch(entry.id, null, failed); } catch (e) { failed(); }
   };
 
-  TH.openSamsungHome = function () {
+  TH.openNativeHome = function () {
+    if (TH.platform === 'webos') {
+      TH.luna('luna://com.webos.applicationManager/launch', { id: 'com.webos.app.home' }, null, function () {
+        TH.luna('luna://com.webos.applicationManager/launch', { id: 'com.palm.app.settings' }, null, function () {
+          TH.toast('Press Home button on LG remote for webOS Home');
+        });
+      });
+      return;
+    }
     if (!tz || !tz.application) { return TH.toast('Samsung Home'); }
     TH.tell('/leave', function () {
       try { tz.application.launch('com.samsung.tv.csfs', null, function () { TH.tell('/home'); }); }
       catch (e) { TH.tell('/home'); }
     }, function () { TH.toast('Samsung Home is unavailable'); });
   };
+  TH.openSamsungHome = TH.openNativeHome;
 
   TH.openSystem = function (which) {
+    if (TH.platform === 'webos') {
+      var list = WEBOS_SYSTEM_APPS[which];
+      if (!list || !list.length) { return TH.toast('Could not open ' + which); }
+      var idx = 0;
+      function tryNext() {
+        if (idx >= list.length) { TH.toast('Could not open ' + which); return; }
+        var targetId = list[idx++];
+        TH.luna('luna://com.webos.applicationManager/launch', { id: targetId }, null, tryNext);
+      }
+      tryNext();
+      return;
+    }
     if (!tz || !tz.application) { return TH.toast('Opening ' + which); }
     var appId = TH.SYSTEM_APPS[which];
     if (!appId) { return; }
@@ -254,6 +400,16 @@
 
   // Wi-Fi strength 0..1, or null when wired, offline or unknown.
   TH.wifi = function (done) {
+    if (TH.platform === 'webos') {
+      TH.luna('luna://com.webos.service.connectionmanager/getStatus', {}, function (res) {
+        if (res && res.wired && res.wired.state === 'connected') { return done(null); }
+        if (res && res.wifi && res.wifi.state === 'connected') { return done(0.85); }
+        done(navigator.onLine === false ? 0 : 0.8);
+      }, function () {
+        done(navigator.onLine === false ? 0 : 0.8);
+      });
+      return;
+    }
     if (!tz || !tz.systeminfo) { return done(0.8); }
     try {
       tz.systeminfo.getPropertyValue('NETWORK', function (n) {

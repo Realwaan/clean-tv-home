@@ -1,15 +1,65 @@
-// Shared basics: TV detection, remote keys, hardware key registration, storage, toast and clock.
+// Shared basics: TV platform detection (Samsung Tizen & LG webOS), Luna service bridge,
+// remote keys, hardware key registration, storage, toast and clock. (ES5 safe for Chromium 34+)
 window.TH = {};
 (function (TH) {
   'use strict';
 
   TH.tz = window.tizen || null;
+  TH.webosBridge = window.PalmServiceBridge || window.WebOSServiceBridge || null;
+  TH.platform = TH.tz ? 'tizen' : (TH.webosBridge || /Web0S|webOS|NetCast/i.test(navigator.userAgent || '') ? 'webos' : 'demo');
+
   TH.KEY = {
-    LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13, BACK: 10009, ESC: 27,
-    CH_UP: 427, CH_DOWN: 428, CH_LIST: 10073, GUIDE: 458, PREV_CH: 10190, INFO: 457
+    LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13,
+    BACK: 10009, LG_BACK: 461, ESC: 27,
+    CH_UP: 427, CH_DOWN: 428, PG_UP: 33, PG_DOWN: 34,
+    CH_LIST: 10073, GUIDE: 458, PREV_CH: 10190, INFO: 457
   };
+
+  TH.isBack = function (k) { return k === 10009 || k === 461 || k === 27; };
+  TH.isChUp = function (k) { return k === 427 || k === 33; };
+  TH.isChDown = function (k) { return k === 428 || k === 34; };
+
   TH.SERVICE_URL = 'http://127.0.0.1:47791';
   TH.SERVICE_ID = 'TvHome0001.Watcher';
+
+  TH.luna = function (uri, params, onOk, onErr) {
+    var Bridge = TH.webosBridge || window.PalmServiceBridge || window.WebOSServiceBridge;
+    if (!Bridge) {
+      setTimeout(function () { if (onErr) { onErr({ errorText: 'No PalmServiceBridge' }); } }, 0);
+      return;
+    }
+    var done = false;
+    var b = new Bridge();
+    var timer = setTimeout(function () {
+      if (done) { return; }
+      done = true;
+      try { if (typeof b.cancel === 'function') { b.cancel(); } } catch (e) {}
+      if (onErr) { onErr({ errorText: 'Luna timeout' }); }
+    }, 2500);
+
+    b.onservicecallback = function (raw) {
+      if (done) { return; }
+      done = true;
+      clearTimeout(timer);
+      var res = null;
+      try { res = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) {}
+      if (res && res.returnValue !== false) {
+        if (onOk) { onOk(res); }
+      } else if (onErr) {
+        onErr(res || { errorText: 'Luna request failed' });
+      }
+    };
+
+    try {
+      b.call(uri, JSON.stringify(params || {}));
+    } catch (e) {
+      if (!done) {
+        done = true;
+        clearTimeout(timer);
+        if (onErr) { onErr({ errorText: e && e.message ? e.message : 'Luna call error' }); }
+      }
+    }
+  };
 
   TH.registerKeys = function () {
     var dev = TH.tz && TH.tz.tvinputdevice;

@@ -52,6 +52,10 @@
       lanIp = info.lanIp || lanIp;
       receiverUrl = info.receiverUrl;
       receiverUrlText.textContent = receiverUrl;
+      const subInfo = document.getElementById('subInfo');
+      if (subInfo && info.tvName) {
+        subInfo.textContent = `Target: ${info.tvName} (${info.brandLabel || info.brand || 'Smart TV'}) · LAN Screen Cast`;
+      }
       if (info.tvOnline) {
         tvPill.className = 'pill live';
         tvPillText.textContent = info.wsAuthorized ? 'TV Ready' : 'TV Online';

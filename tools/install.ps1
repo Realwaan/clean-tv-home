@@ -36,6 +36,10 @@ if (-not $CliPath -or -not (Test-Path $CliPath)) {
 if (Test-Path $DistApp) { Remove-Item -Recurse -Force $DistApp }
 New-Item -ItemType Directory -Force -Path (Split-Path $DistApp) | Out-Null
 Copy-Item -Recurse -Force $AppDir $DistApp
+foreach ($lgOnly in @("appinfo.json", "icon80.png", "icon130.png")) {
+  $p = Join-Path $DistApp $lgOnly
+  if (Test-Path $p) { Remove-Item -Force $p }
+}
 
 if (Test-Path $TmdbKeyPath) {
   $key = (Get-Content -Raw $TmdbKeyPath).Trim()

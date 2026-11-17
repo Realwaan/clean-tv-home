@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Clean TV Remote — Samsung BU8100</title>
+  <title>Clean TV Remote — Samsung &amp; LG Smart TVs</title>
   <link rel="stylesheet" href="remote.css">
 </head>
 <body>
@@ -11,13 +11,17 @@
     <div class="remote-case">
       <!-- Status & Power Header -->
       <header class="remote-header">
-        <div class="tv-info">
-          <span class="tv-name" id="tvName">Samsung BU8100 55</span>
+        <button class="tv-info tv-trigger" id="btnToggleSwitcher" title="Click to Switch TV (Samsung / LG) or Scan Network">
+          <div class="tv-name-row">
+            <span class="tv-name" id="tvName">Samsung BU8100 55</span>
+            <span class="brand-badge" id="tvBrandBadge">SAMSUNG</span>
+          </div>
           <div class="status-pill" id="statusPill">
             <span class="dot"></span>
             <span class="status-text" id="statusText">Connecting...</span>
+            <span class="switch-hint">▾ Switch TV</span>
           </div>
-        </div>
+        </button>
         <div class="header-actions">
           <a href="/cast.html" class="btn btn-cast" title="Screen Share / Cast PC to TV">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -33,6 +37,34 @@
           </button>
         </div>
       </header>
+
+      <!-- Collapsible Multi-Brand TV Switcher & LAN Scanner -->
+      <section class="switcher-drawer" id="tvSwitcherDrawer" hidden>
+        <div class="drawer-row">
+          <input type="text" id="tvIpInput" placeholder="TV IP (e.g. 192.168.254.113)" aria-label="TV IP Address">
+          <select id="tvBrandSelect" aria-label="TV Brand">
+            <option value="auto">Auto</option>
+            <option value="lg-webos">LG webOS</option>
+            <option value="lg-netcast">LG NetCast</option>
+            <option value="samsung">Samsung</option>
+          </select>
+        </div>
+        <div class="drawer-actions">
+          <button class="btn btn-sm-accent" id="btnConnectTv">Connect</button>
+          <button class="btn btn-sm-ghost" id="btnScanTvs">Scan Wi-Fi / LAN</button>
+        </div>
+        <div class="scan-list" id="scanList" hidden></div>
+      </section>
+
+      <!-- LG NetCast 6-Digit PIN Pairing Drawer -->
+      <section class="pin-drawer" id="pinDrawer" hidden>
+        <div class="pin-title">Enter 6-Digit Pairing Key Shown on Your LG TV</div>
+        <div class="drawer-row">
+          <input type="text" id="pinInput" placeholder="6-digit PIN" maxlength="12" aria-label="LG Pairing PIN">
+          <button class="btn btn-sm-accent" id="btnSubmitPin">Pair</button>
+          <button class="btn btn-sm-ghost" id="btnShowPin" title="Show PIN again on TV">Show PIN</button>
+        </div>
+      </section>
 
       <!-- App Shortcuts Row -->
       <section class="section app-section">
@@ -86,7 +118,7 @@
         </div>
 
         <div class="center-controls">
-          <button class="btn btn-round" data-launch="com.samsung.tv.csfs" title="Stock Samsung Hub">
+          <button class="btn btn-round" data-launch="com.samsung.tv.csfs" title="Stock TV Home">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
               <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>

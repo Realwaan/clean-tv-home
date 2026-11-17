@@ -4,3 +4,7 @@ app/js/key.js
 node_modules/
 **/tv_token.txt
 tv_token.txt
+**/tv_tokens.json
+tv_tokens.json
+**/tv_config.json
+tv_config.json

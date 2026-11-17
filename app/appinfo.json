@@ -1,0 +1,16 @@
+{
+  "id": "org.cleantv.home",
+  "version": "0.2.0",
+  "vendor": "Clean TV Home",
+  "type": "web",
+  "main": "index.html",
+  "title": "Clean TV Home",
+  "icon": "icon80.png",
+  "largeIcon": "icon130.png",
+  "resolution": "1920x1080",
+  "bgColor": "#08090b",
+  "iconColor": "#08090b",
+  "disableBackHistoryAPI": true,
+  "handlesRelaunch": true,
+  "supportGIP": true
+}
